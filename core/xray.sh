@@ -25,13 +25,7 @@ cat > /usr/local/etc/xray/config.json <<EOF
     "settings": { "clients": [] },
     "streamSettings": {
       "network": "tcp",
-      "security": "tls",
-      "tlsSettings": {
-        "certificates": [{
-          "certificateFile": "/etc/letsencrypt/live/$DOMAIN/fullchain.pem",
-          "keyFile": "/etc/letsencrypt/live/$DOMAIN/privkey.pem"
-        }]
-      }
+      "security": "none"
     }
   }],
   "outbounds": [{ "protocol": "freedom" }]
