@@ -1,0 +1,19 @@
+#!/bin/bash
+clear
+echo "=============================="
+echo "       ZiVPN MENU"
+echo "=============================="
+echo "1. Status Xray"
+echo "2. Restart Xray"
+echo "3. View Log Error"
+echo "0. Exit"
+echo "=============================="
+read -rp "Pilih: " pilih
+
+case $pilih in
+  1) systemctl status xray ;;
+  2) systemctl restart xray && echo "✅ Xray direstart" ;;
+  3) tail -n 20 /var/log/xray/error.log ;;
+  0) exit ;;
+  *) echo "❌ Pilihan tidak valid" ;;
+esac
