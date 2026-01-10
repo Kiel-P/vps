@@ -2,6 +2,8 @@
 set -e
 trap 'echo "❌ INSTALL ERROR — proses dihentikan"; exit 1' ERR
 
+BASEDIR="$(cd "$(dirname "$0")" && pwd)"
+
 clear
 echo "=================================="
 echo "     ZiVPN Installer v1.0"
@@ -12,17 +14,37 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
-chmod +x core/*.sh bin/zivpn
+# ---------- VALIDASI FILE ----------
+REQUIRED_FILES=(
+  "$BASEDIR/core/dependency.sh"
+  "$BASEDIR/core/domain.sh"
+  "$BASEDIR/core/xray.sh"
+  "$BASEDIR/core/systemd.sh"
+  "$BASEDIR/core/ssl.sh"
+  "$BASEDIR/bin/zivpn"
+)
 
-source core/dependency.sh
-source core/domain.sh
-source core/xray.sh
-source core/systemd.sh
-source core/ssl.sh
+for f in "${REQUIRED_FILES[@]}"; do
+  if [[ ! -f "$f" ]]; then
+    echo "❌ File tidak ditemukan: $f"
+    exit 1
+  fi
+done
 
-install -m 755 bin/zivpn /usr/bin/zivpn
+chmod +x "$BASEDIR"/core/*.sh
+chmod +x "$BASEDIR"/bin/zivpn
 
-if ! command -v zivpn >/dev/null; then
+# ---------- INSTALL STEP ----------
+source "$BASEDIR/core/dependency.sh"
+source "$BASEDIR/core/domain.sh"
+source "$BASEDIR/core/xray.sh"
+source "$BASEDIR/core/systemd.sh"
+source "$BASEDIR/core/ssl.sh"
+
+# ---------- INSTALL COMMAND ----------
+install -m 755 "$BASEDIR/bin/zivpn" /usr/bin/zivpn
+
+if ! command -v zivpn >/dev/null 2>&1; then
   echo "❌ zivpn gagal terpasang"
   exit 1
 fi
