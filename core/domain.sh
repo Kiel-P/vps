@@ -10,4 +10,4 @@ else
 fi
 
 export DOMAIN
-echo "[INFO] Domain digunakan: $DOMAIN"
+echo "[INFO] Domain: $DOMAIN"
