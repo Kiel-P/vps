@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "[INFO] Setup systemd xray"
+echo "[INFO] Setup systemd Xray"
 
 cat > /etc/systemd/system/xray.service <<EOF
 [Unit]
@@ -18,3 +18,4 @@ EOF
 systemctl daemon-reexec
 systemctl daemon-reload
 systemctl enable xray
+systemctl restart xray
