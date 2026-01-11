@@ -70,3 +70,13 @@ systemctl restart zivpn
 
 echo "✅ ZIVPN Installed"
 echo "➡ Port : 5667"
+
+apt install -y jq
+
+cat > /usr/local/bin/kiki << 'EOF'
+#!/bin/bash
+bash /usr/local/bin/kiki
+EOF
+
+chmod +x /usr/local/bin/kiki
+
