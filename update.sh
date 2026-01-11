@@ -1,4 +1,18 @@
+
+
 #!/bin/bash
+echo "🔄 Update ZIVPN..."
+
+wget -q -O /usr/local/bin/kiki https://raw.githubusercontent.com/kiel-p/vps/main/menu/kiki
+chmod +x /usr/local/bin/kiki
+
+systemctl restart zivpn
+
+echo "✅ Update selesai"
+echo "➡ Jalankan: kiki"
+
+
+
 pkill menu 2>/dev/null
 
 set -euo pipefail
