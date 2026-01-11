@@ -1,0 +1,11 @@
+[Unit]
+Description=ZIVPN UDP Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/zivpn server -c /etc/zivpn/config.json
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
