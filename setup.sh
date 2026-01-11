@@ -1,16 +1,8 @@
 #!/bin/bash
-ARCH=$(uname -m)
+set -e
 
-if [[ "$ARCH" == "x86_64" ]]; then
-    FILE="install-amd64"
-elif [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
-    FILE="install-arm64"
-else
-    echo "Unsupported architecture: $ARCH"
-    exit 1
-fi
+echo "📦 ZIVPN One Click Installer"
 
-wget -O install "https://github.com/diah082/udp-zivpn/releases/latest/download/$FILE"
-chmod +x install
-./install
-
+wget -q https://raw.githubusercontent.com/USERNAME/udp-zivpn/main/install.sh
+chmod +x install.sh
+./install.sh
