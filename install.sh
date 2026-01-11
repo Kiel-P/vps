@@ -1,54 +1,72 @@
 #!/bin/bash
 set -e
 
-BASEDIR="$(cd "$(dirname "$0")" && pwd)"
+echo "🚀 Installing ZIVPN UDP..."
 
-echo "=================================="
-echo "     ZiVPN Installer v1.0 STABLE"
-echo "=================================="
+# ===== BASIC DEPENDENCY =====
+apt update -y
+apt install -y wget curl socat cron unzip openssl
 
-if [[ $EUID -ne 0 ]]; then
-  echo "❌ Jalankan sebagai root"
-  exit 1
+# ===== FOLDER =====
+mkdir -p /etc/zivpn
+mkdir -p /var/log/zivpn
+
+# ===== CONFIG =====
+if [[ ! -f /etc/zivpn/config.json ]]; then
+cat > /etc/zivpn/config.json << 'EOF'
+{
+  "listen": ":5667",
+  "cert": "/etc/zivpn/zivpn.crt",
+  "key": "/etc/zivpn/zivpn.key",
+  "obfs": "zivpn",
+  "auth": {
+    "mode": "passwords",
+    "config": ["zi"]
+  }
+}
+EOF
 fi
 
-REQUIRED=(
-"$BASEDIR/core/dependency.sh"
-"$BASEDIR/core/domain.sh"
-"$BASEDIR/core/xray.sh"
-"$BASEDIR/core/systemd.sh"
-"$BASEDIR/core/ssl.sh"
-"$BASEDIR/bin/zivpn"
-)
-
-for f in "${REQUIRED[@]}"; do
-  if [[ ! -f "$f" ]]; then
-    echo "❌ File hilang: $f"
-    exit 1
-  fi
-done
-
-chmod +x "$BASEDIR"/core/*.sh
-chmod +x "$BASEDIR"/bin/zivpn
-
-source "$BASEDIR/core/dependency.sh"
-source "$BASEDIR/core/domain.sh"
-source "$BASEDIR/core/xray.sh"
-source "$BASEDIR/core/systemd.sh"
-
-# SSL JANGAN MEMBUNUH INSTALLER
-set +e
-source "$BASEDIR/core/ssl.sh"
-set -e
-
-install -m 755 "$BASEDIR/bin/zivpn" /usr/bin/zivpn
-
-if ! command -v zivpn >/dev/null; then
-  echo "❌ zivpn gagal terpasang"
-  exit 1
+# ===== SSL SELF SIGNED =====
+if [[ ! -f /etc/zivpn/zivpn.crt ]]; then
+openssl req -x509 -nodes -days 365 \
+-newkey rsa:2048 \
+-keyout /etc/zivpn/zivpn.key \
+-out /etc/zivpn/zivpn.crt \
+-subj "/CN=zivpn"
 fi
 
-echo "=================================="
-echo "✅ INSTALL SELESAI"
-echo "➡️ Jalankan: zivpn"
-echo "=================================="
+# ===== DETECT ARCH =====
+ARCH=$(uname -m)
+case "$ARCH" in
+x86_64) BIN="install-amd64" ;;
+aarch64|arm64) BIN="install-arm64" ;;
+*) echo "❌ Unsupported arch"; exit 1 ;;
+esac
+
+# ===== DOWNLOAD CORE =====
+wget -O /usr/local/bin/zivpn "https://github.com/diah082/udp-zivpn/releases/latest/download/$BIN"
+chmod +x /usr/local/bin/zivpn
+
+# ===== SYSTEMD =====
+cat > /etc/systemd/system/zivpn.service << 'EOF'
+[Unit]
+Description=ZIVPN UDP Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/zivpn server -c /etc/zivpn/config.json
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reexec
+systemctl daemon-reload
+systemctl enable zivpn
+systemctl restart zivpn
+
+echo "✅ ZIVPN Installed"
+echo "➡ Port : 5667"
